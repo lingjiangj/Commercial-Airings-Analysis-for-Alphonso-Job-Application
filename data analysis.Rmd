@@ -1,0 +1,318 @@
+---
+title: "data analysis"
+author: "Ling Jiang"
+date: "1/22/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
+
+```{r }
+ipad <- readxl::read_xlsx("Alphonso-Airings-Report-ipad-20200122.xlsx")
+surface <- readxl::read_xlsx("Alphonso-Airings-Report-Surface-20200122.xlsx")
+
+ipad <- ipad[-seq(1,10,1),] %>%
+  select(-c(`Co-Op Product`,`Co-Op Brand`))
+
+surface <- surface[-seq(1,10,1),] %>%
+  select(-c(`Co-Op Product`,`Co-Op Brand`))
+
+ipad$`Spend ($)` <- as.numeric(ipad$`Spend ($)`)
+surface$`Spend ($)` <- as.numeric(surface$`Spend ($)`)
+total <- rbind(ipad, surface)
+total$`Hour Of Day`<- as.numeric(total$`Hour Of Day`)
+total$`Day Of Week` <- as.numeric(total$`Day Of Week`)
+
+
+```
+
+
+
+# by network general
+```{r}
+ipad %>%
+  group_by(Network) %>%
+  summarise(n = n()) %>%
+  arrange(desc(n)) %>%
+  slice(1:10) %>%
+  ggplot(aes(x = fct_reorder(Network,n), y = n, fill = Network)) + 
+  geom_col() + 
+  coord_flip() + 
+  theme(legend.position="none") +
+  labs(title = "Apple iPad Top 10 Airing by Network", x = "Networks", y = "Number of Airings")
+
+surface %>%
+  group_by(Network) %>%
+  summarise(n = n()) %>%
+  arrange(desc(n)) %>%
+  slice(1:10) %>%
+  ggplot(aes(x = fct_reorder(Network,n), y = n, fill = Network)) + 
+  geom_col() + 
+  coord_flip() + 
+  theme(legend.position="none") +
+  labs(title = "Microsoft Surface Top 10 Airing by Network", x = "Networks", y = "Number of Airings")
+```
+
+## By network & network Type
+
+```{r}
+ipad %>%
+  filter(`Network Type` == "broadcast") %>%
+  group_by(Network) %>%
+  summarise(n = n()) %>%
+  arrange(desc(n)) %>%
+  slice(1:10) %>%
+  ggplot(aes(x = fct_reorder(Network,n), y = n, fill = Network)) + 
+  geom_col() + 
+  coord_flip() + 
+  theme(legend.position="none") + labs(title = "Apple iPad Airing by Network- Broadcast", x = "Networks", y = "Number of Airings")
+
+ipad %>%
+  filter(`Network Type` == "cable") %>%
+  group_by(Network) %>%
+  summarise(n = n()) %>%
+  arrange(desc(n)) %>%
+  slice(1:10) %>%
+  ggplot(aes(x = fct_reorder(Network,n), y = n, fill = Network)) + 
+  geom_col() +
+  coord_flip() + 
+  theme(legend.position="none") + labs(title = "Apple iPad Top 10 Airing by Network- Cable", x = "Networks", y = "Number of Airings")
+
+surface %>%
+  filter(`Network Type` == "broadcast") %>%
+  group_by(Network) %>%
+  summarise(n = n()) %>%
+  arrange(desc(n)) %>%
+  slice(1:10) %>%
+  ggplot(aes(x = fct_reorder(Network,n), y = n, fill = Network)) + 
+  geom_col() +
+  coord_flip() + 
+  theme(legend.position="none") + labs(title = "Microsoft Surface Airing by Network- Broadcast", x = "Networks", y = "Number of Airings")
+
+surface %>%
+  filter(`Network Type` == "cable") %>%
+  group_by(Network) %>%
+  summarise(n = n()) %>%
+  arrange(desc(n)) %>%
+  slice(1:10) %>%
+  ggplot(aes(x = fct_reorder(Network,n), y = n, fill = Network)) + 
+  geom_col() +
+  coord_flip() + 
+  theme(legend.position="none") + labs(title = "Microsoft Surface Top 10 Airing by Network - Cable", x = "Networks", y = "Number of Airings")
+```
+
+
+## cost/avg cost by network
+```{r}
+ipad %>%
+  group_by(Network) %>%
+  summarise(n = n(), totalcost = sum(`Spend ($)`)) %>%
+  arrange(desc(n)) %>%
+  slice(1:10) %>%
+  ggplot(aes(x = fct_reorder(Network,totalcost), y = totalcost, fill = Network)) + 
+  geom_col() + 
+  coord_flip() + 
+  theme(legend.position="none") +
+  labs(title = "Apple iPad Top 10 Airing Cost by Network", x = "Networks", y = "Cost of Airings")
+
+surface %>%
+  group_by(Network) %>%
+  summarise(n = n(), totalcost = sum(`Spend ($)`)) %>%
+  arrange(desc(n)) %>%
+  slice(1:10) %>%
+  ggplot(aes(x = fct_reorder(Network,totalcost), y = totalcost, fill = Network)) + 
+  geom_col() + 
+  coord_flip() + 
+  theme(legend.position="none") +
+  labs(title = "Microsoft Surface Top 10 Airing Cost by Network", x = "Networks", y = "Cost of Airings")
+
+ipad %>%
+  group_by(Network) %>%
+  summarise(n = n(), totalcost = sum(`Spend ($)`)/1000,averagecost = totalcost/n) %>%
+  arrange(desc(n)) %>%
+  slice(1:10) %>%
+  ggplot(aes(x = fct_reorder(Network,averagecost), y = averagecost, fill = Network)) + 
+  geom_col() + 
+  coord_flip() + 
+  theme(legend.position="none") +
+  labs(title = "Apple iPad Top 10 Average Airing Cost by Network", x = "Networks", y = "Average Cost of Airings($000)")
+
+surface %>%
+  group_by(Network) %>%
+  summarise(n = n(), totalcost = sum(`Spend ($)`)/1000,averagecost = totalcost/n) %>%
+  arrange(desc(n)) %>%
+  slice(1:10) %>%
+  ggplot(aes(x = fct_reorder(Network,averagecost), y = averagecost, fill = Network)) + 
+  geom_col() + 
+  coord_flip() + 
+  theme(legend.position="none") +
+  labs(title = "Microsoft Surface Top 10 Average Airing Cost by Network", x = "Networks", y = " Average Cost of Airings($000)")
+
+ipad %>%
+  group_by(`Network Type`) %>%
+  summarise(n = n(), total = sum(`Spend ($)`), average = total/n) %>%
+  ggplot(aes(x = `Network Type`,y = average)) + geom_col()
+```
+# cost by network types
+```{r}
+ipad %>%
+  filter(`Network Type` == "broadcast") %>%
+  group_by(Network) %>%
+  summarise(n = n(), totalcost = sum(`Spend ($)`)/1000,average = totalcost/n) %>%
+  arrange(desc(n)) %>%
+  slice(1:10) %>%
+  ggplot(aes(x = fct_reorder(Network,average), y = average, fill = Network)) + 
+  geom_col() + 
+  coord_flip() + 
+  theme(legend.position="none") +
+  labs(title = "Apple iPad Top 10 Airing Average Cost by Network - broadcast", x = "Networks", y = "Cost of Airings($000)")
+
+surface %>%
+  filter(`Network Type` == "broadcast") %>%
+  group_by(Network) %>%
+  summarise(n = n(), totalcost = sum(`Spend ($)`)/1000,average = totalcost/n) %>%
+  arrange(desc(n)) %>%
+  slice(1:10) %>%
+  ggplot(aes(x = fct_reorder(Network,average), y = average, fill = Network)) + 
+  geom_col() + 
+  coord_flip() + 
+  theme(legend.position="none") +
+  labs(title = "Microsoft Surface Top 10 Average Airing Cost by Network -broadcast", x = "Networks", y = "Cost of Airings($000)")
+
+ipad %>%
+  filter(`Network Type` == "cable") %>%
+  group_by(Network) %>%
+  summarise(n = n(), totalcost = sum(`Spend ($)`),averagecost = totalcost/n) %>%
+  arrange(desc(n)) %>%
+  slice(1:10) %>%
+  ggplot(aes(x = fct_reorder(Network,averagecost), y = averagecost, fill = Network)) + 
+  geom_col() + 
+  coord_flip() + 
+  theme(legend.position="none") +
+  labs(title = "Apple iPad Top 10 Airing Average Cost by Network- cable", x = "Networks", y = "Average Cost of Airings")
+
+surface %>%
+  filter(`Network Type` == "cable") %>%
+  group_by(Network) %>%
+  summarise(n = n(), totalcost = sum(`Spend ($)`),averagecost = totalcost/n) %>%
+  arrange(desc(n)) %>%
+  slice(1:10) %>%
+  ggplot(aes(x = fct_reorder(Network,averagecost), y = averagecost, fill = Network)) + 
+  geom_col() + 
+  coord_flip() + 
+  theme(legend.position="none") +
+  labs(title = "Microsoft Surface Top 10 Average Airing Cost by Network - cable", x = "Networks", y = "Cost of Airings")
+
+```
+
+## by show
+```{r}
+ipad %>%
+  group_by(Show) %>%
+  summarise(n = n()) %>%
+  arrange(desc(n)) %>%
+  slice(1:10) %>%
+  ggplot(aes(x = fct_reorder(Show,n), y = n, fill = Show)) + 
+  geom_col() + 
+  coord_flip() + 
+  theme(legend.position="none") + 
+  labs(title = "Apple iPad Top 10 Airing by Show", x = "Shows", y = "Number of Airings")
+
+surface %>%
+  group_by(Show) %>%
+  summarise(n = n()) %>%
+  arrange(desc(n)) %>%
+  slice(1:10) %>%
+  ggplot(aes(x = fct_reorder(Show,n), y = n, fill = Show)) + 
+  geom_col() + 
+  coord_flip() + 
+  theme(legend.position="none") +
+  labs(title = "Microsoft Surface Top 10 Airing by Show", x = "Shows", y = "Number of Airings")
+```
+
+```{r}
+ipad$`Spend ($)` <- as.numeric(ipad$`Spend ($)`)
+surface$`Spend ($)` <- as.numeric(surface$`Spend ($)`)
+
+ipad %>%
+  group_by(`Network Type`,Network) %>%
+  summarise(n = n(), totalcost= sum(`Spend ($)`),avgcost = totalcost/n)
+
+surface %>%
+  group_by(`Network Type`,Network) %>%
+  summarise(n = n(),totalcost= sum(`Spend ($)`),avgcost = totalcost/n)
+
+```
+ 
+## by Hours & by weekdays
+```{r}
+total <- rbind(ipad, surface)
+total$`Hour Of Day`<- as.numeric(total$`Hour Of Day`)
+total$`Day Of Week` <- as.numeric(total$`Day Of Week`)
+
+# Hour of Day
+# total %>%
+#   group_by(Product,`Hour Of Day`) %>%
+#   summarise(n = n()) %>%
+#   arrange(`Hour Of Day`) %>%
+#   ggplot(aes(x = `Hour Of Day`, y = n, group = Product, color = Product)) + geom_line()  + scale_x_continuous(breaks=seq(0, 23, 1)) + labs(title = "Trends in Hours of Airing for Two Products", x = "Hours of Day", y = "Number of Airing")
+
+total %>%
+  group_by(Product,`Hour Of Day`) %>%
+  summarise(n = n(),total = sum(`Spend ($)`), avg = total/n) %>%
+  arrange(`Hour Of Day`) %>%
+  ggplot(aes(x = `Hour Of Day`, y = n, group = Product, color = Product)) + geom_line()  +facet_wrap(~Product,scales = "free")+ scale_x_continuous(breaks=seq(0, 23, 1)) + labs(title = "Trends in Hours of Airing for Two Products", x = "Hours of Day", y = "Number of Airing")
+
+# Day of week
+# total %>%
+#   group_by(Product,`Day Of Week`) %>%
+#   summarise(n = n()) %>%
+#   arrange(`Day Of Week`) %>%
+#   ggplot(aes(x = `Day Of Week`, y = n, group = Product, color = Product)) + geom_line() +scale_x_continuous(breaks = seq(1,7,1)) + labs(title = "Trends in Weekdays of Airing for Two Products", x = "Weekdays", y = "Number of Airings")
+
+total %>%
+  group_by(Product,`Day Of Week`) %>%
+  summarise(n = n(), total = sum(`Spend ($)`), avg = total/n) %>%
+  arrange(`Day Of Week`) %>%
+  ggplot(aes(x =`Day Of Week`, y = n, group = Product, color = Product)) + geom_line() + facet_wrap(~Product,scales = "free") + labs(title = "Trends in Weekdays of Airing for Two Products", x = "Weekdays", y = "Number of Airings") + scale_x_continuous(breaks = seq(1,7,1),labels=c("Mon", "Tue", "Wed","Thu", "Fri","Sat","Sun"))
+```
+## cost of the day
+```{r}
+total %>%
+  group_by(Product,`Day Of Week`) %>%
+  summarise(n = n(), total = sum(`Spend ($)`), avg = total/n) %>%
+  arrange(`Day Of Week`) %>%
+  ggplot(aes(x = `Day Of Week`, y = avg, group = Product, color = Product)) + geom_line() + facet_wrap(~Product,scales = "free") + labs(title = "Trends in Average Costs of Airing by Weekdays", x = "Weekdays", y = "Average Costs") + scale_x_continuous(breaks = seq(1,7,1),labels=c("Mon", "Tue", "Wed","Thu", "Fri","Sat","Sun"))
+```
+
+```{r}
+ipad %>%
+  group_by(`Pod Position`,Dayparts) %>%
+  summarise(n = n()) %>%
+  arrange(as.numeric(`Pod Position`)) %>%
+  ggplot(aes(x = as.numeric(`Pod Position`) ,y = n, group = Dayparts, color = Dayparts)) + geom_line() + facet_wrap(~Dayparts,scales = "free")
+
+surface %>%
+  group_by(`Pod Position`,Dayparts) %>%
+  summarise(n = n()) %>%
+  arrange(as.numeric(`Pod Position`)) %>%
+  ggplot(aes(x = as.numeric(`Pod Position`) ,y = n, group = Dayparts, color = Dayparts)) + geom_line() + facet_wrap(~Dayparts,scales = "free")
+```
+
+
+
+```{r fig.width = 7, fig.height = 8.08, dpi = 96}
+rg <- lm(log(`Spend ($)`) ~ `Hour Of Day` , data = surface )
+summary(rg)
+
+r_ipad <- lm(log(`Spend ($)`) ~ `Hour Of Day`, data = ipad )
+summary(r_ipad)
+```
+
+
+
+
+
